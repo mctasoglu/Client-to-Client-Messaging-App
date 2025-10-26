@@ -282,7 +282,7 @@ int main() {
             // This is an accepted client socket from which we can receive
             if(avail_cfd > 0 && FD_ISSET(avail_cfd, &readfds)) {
                 char buffer_test[BUF_SIZE];
-                recv_bytes = recv(avail_cfd, buffer_test, BUF_SIZE, 0);
+                recv_bytes = recv(avail_cfd, buffer_test, BUF_SIZE - 1, 0);
                 if (recv_bytes <= 0) {
                     // Client Disconnected/Error: Clean up sender_fd
                     close(avail_cfd);
@@ -303,7 +303,12 @@ int main() {
     close(listener_sfd);
 
     for(int k = 0; k < MAX_CLIENTS; k++) {
-        client_socket[k] = 0;
+        int sd = client_socket[k];
+        if (sd > 0) {
+            close(sd);
+            client_socket[k] = 0; // Mark as closed
+            printf("Closed client socket (FD %d).\n", sd);
+        }
     }
     printf("Socket closed and program finished.\n");
     return 0;
